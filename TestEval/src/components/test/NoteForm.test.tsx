@@ -5,12 +5,11 @@ import NoteForm from '../NoteForm';
 import useNoteStore from '../../store';
 
 beforeEach(() => {
-  useNoteStore.setState({ selectedNote: null, notes: [] });
+  useNoteStore.setState({ selectedNote: null, notes: [], addNote: vi.fn(), updateNote: vi.fn() });
 });
 
 test('renders NoteForm and submits new note', () => {
-  const addNote = vi.fn();
-  useNoteStore.setState({ addNote });
+  const addNote = useNoteStore.getState().addNote;
 
   render(<NoteForm />);
 
@@ -28,6 +27,8 @@ test('renders NoteForm and submits new note', () => {
 });
 
 test('renders NoteForm and does not submit note with score above 20', () => {
+  const addNote = useNoteStore.getState().addNote;
+
   render(<NoteForm />);
 
   fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'New Note' } });
@@ -35,21 +36,19 @@ test('renders NoteForm and does not submit note with score above 20', () => {
   fireEvent.change(screen.getByLabelText(/comment/i), { target: { value: 'This is a new note' } });
   fireEvent.click(screen.getByText(/save note/i));
 
-  const addNote = useNoteStore.getState().addNote;
-
   expect(addNote).not.toHaveBeenCalled();
   expect(screen.getByText('Score must be between 0 and 20')).toBeInTheDocument();
 });
 
 test('renders NoteForm and does not submit a note with a score less than 0', () => {
+  const addNote = useNoteStore.getState().addNote;
+
   render(<NoteForm />);
 
   fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'New Note' } });
   fireEvent.change(screen.getByLabelText(/score/i), { target: { value: '-3' } });
   fireEvent.change(screen.getByLabelText(/comment/i), { target: { value: 'This is a new note' } });
   fireEvent.click(screen.getByText(/save note/i));
-
-  const addNote = useNoteStore.getState().addNote;
 
   expect(addNote).not.toHaveBeenCalled();
   expect(screen.getByText('Score must be between 0 and 20')).toBeInTheDocument();
